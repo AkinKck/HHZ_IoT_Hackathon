@@ -1,0 +1,328 @@
+[{
+	"id": "cafa937.6bdd87",
+	"type": "tab",
+	"label": "Smart Table Flow",
+	"disabled": false,
+	"info": ""
+}, {
+	"id": "55035320.c69b1c",
+	"type": "http in",
+	"z": "cafa937.6bdd87",
+	"name": "",
+	"url": "/upload-form",
+	"method": "get",
+	"upload": false,
+	"swaggerDoc": "",
+	"x": 200,
+	"y": 140,
+	"wires": [
+		["5a353a.f0a54ac8"]
+	]
+}, {
+	"id": "5a353a.f0a54ac8",
+	"type": "template",
+	"z": "cafa937.6bdd87",
+	"name": "html",
+	"field": "payload",
+	"fieldType": "msg",
+	"format": "handlebars",
+	"syntax": "mustache",
+	"template": "<h1>Upload a file here:</h1>\n\n<form action=\"/upload\" method=\"POST\" enctype=\"multipart/form-data\">\n    <input type=\"file\" name=\"myFile\" />\n    <input type=\"submit\" value=\"Submit\">\n</form>",
+	"output": "str",
+	"x": 430,
+	"y": 140,
+	"wires": [
+		["887897ba.bb3d78"]
+	]
+}, {
+	"id": "887897ba.bb3d78",
+	"type": "http response",
+	"z": "cafa937.6bdd87",
+	"name": "",
+	"statusCode": "",
+	"headers": {},
+	"x": 670,
+	"y": 140,
+	"wires": []
+}, {
+	"id": "2d3240e6.dfd75",
+	"type": "http response",
+	"z": "cafa937.6bdd87",
+	"name": "",
+	"statusCode": "",
+	"headers": {},
+	"x": 1030,
+	"y": 220,
+	"wires": []
+}, {
+	"id": "b47b2c9e.565fb",
+	"type": "http in",
+	"z": "cafa937.6bdd87",
+	"name": "",
+	"url": "/upload",
+	"method": "post",
+	"upload": true,
+	"swaggerDoc": "",
+	"x": 190,
+	"y": 300,
+	"wires": [
+		["56baa449.7e87bc"]
+	]
+}, {
+	"id": "c6ab10bf.fdb58",
+	"type": "template",
+	"z": "cafa937.6bdd87",
+	"name": "html",
+	"field": "payload",
+	"fieldType": "msg",
+	"format": "handlebars",
+	"syntax": "mustache",
+	"template": "<p></p>File {{name}} uploaded !</p>\n\n<h2>Contents:</h2>\n\n<pre>\n{{{payload}}}\n</pre>",
+	"output": "str",
+	"x": 790,
+	"y": 220,
+	"wires": [
+		["2d3240e6.dfd75"]
+	]
+}, {
+	"id": "56baa449.7e87bc",
+	"type": "function",
+	"z": "cafa937.6bdd87",
+	"name": "toBase64",
+	"func": "msg.name = msg.req.files[0].originalname;\n\n//if (msg.req.files[0].mimetype.includes('image')) {\n//   msg.payload = `<img src=\"data:image/gif;base64,${msg.req.files[0].buffer.toString('base64')}\">`;\n//} else {\n//    msg.payload = msg.req.files[0].buffer.toString();\n//}\n\nmsg.payload = msg.req.files[0].buffer.toString('base64');\nreturn msg;",
+	"outputs": 1,
+	"noerr": 0,
+	"x": 420,
+	"y": 300,
+	"wires": [
+		["c6ab10bf.fdb58", "9ab09d36.5344e", "f1771005.ea843"]
+	]
+}, {
+	"id": "9ab09d36.5344e",
+	"type": "image viewer",
+	"z": "cafa937.6bdd87",
+	"name": "",
+	"width": 160,
+	"data": "payload",
+	"dataType": "msg",
+	"x": 790,
+	"y": 360,
+	"wires": [
+		[]
+	]
+}, {
+	"id": "f1771005.ea843",
+	"type": "template",
+	"z": "cafa937.6bdd87",
+	"name": "GCP vision JSON template",
+	"field": "payloadrule",
+	"fieldType": "msg",
+	"format": "json",
+	"syntax": "plain",
+	"template": "{\n  \"requests\":[\n    {\n      \"image\":{\n        \"content\":\"base64-encoded-file-data\"\n      },\n      \"features\":[\n        {\n          \"type\":\"TEXT_DETECTION\",\n          \"maxResults\":1\n        }\n      ],\n      \"imageContext\": {\n          \"languageHints\": [\n            \"en\"\n          ]\n      }\n    }\n  ]\n}",
+	"x": 560,
+	"y": 440,
+	"wires": [
+		["2661b39c.18bbec"]
+	]
+}, {
+	"id": "2661b39c.18bbec",
+	"type": "change",
+	"z": "cafa937.6bdd87",
+	"name": "request body json maker",
+	"rules": [{
+		"t": "change",
+		"p": "payloadrule",
+		"pt": "msg",
+		"from": "base64-encoded-file-data",
+		"fromt": "str",
+		"to": "payload",
+		"tot": "msg"
+	}],
+	"action": "",
+	"property": "",
+	"from": "",
+	"to": "",
+	"reg": false,
+	"x": 570,
+	"y": 580,
+	"wires": [
+		["75fd9c1d.724614"]
+	]
+}, {
+	"id": "5de8338a.854a0c",
+	"type": "http request",
+	"z": "cafa937.6bdd87",
+	"name": "",
+	"method": "POST",
+	"ret": "obj",
+	"paytoqs": false,
+	"url": "",
+	"tls": "",
+	"persist": false,
+	"proxy": "",
+	"authType": "",
+	"x": 870,
+	"y": 720,
+	"wires": [
+		["5aa29a5d.deb574", "b60f887b.678df8"]
+	]
+}, {
+	"id": "75fd9c1d.724614",
+	"type": "change",
+	"z": "cafa937.6bdd87",
+	"name": "http request maker",
+	"rules": [{
+		"t": "set",
+		"p": "payload",
+		"pt": "msg",
+		"to": "payloadrule",
+		"tot": "msg"
+	}, {
+		"t": "set",
+		"p": "url",
+		"pt": "msg",
+		"to": "config.googleVisionApiUrl",
+		"tot": "global"
+	}, {
+		"t": "set",
+		"p": "headers",
+		"pt": "msg",
+		"to": "\"Content-Type: application/json\"",
+		"tot": "str"
+	}],
+	"action": "",
+	"property": "",
+	"from": "",
+	"to": "",
+	"reg": false,
+	"x": 890,
+	"y": 580,
+	"wires": [
+		["1c39054.aa940fb", "5de8338a.854a0c"]
+	]
+}, {
+	"id": "1c39054.aa940fb",
+	"type": "debug",
+	"z": "cafa937.6bdd87",
+	"name": "",
+	"active": false,
+	"console": "false",
+	"complete": "true",
+	"x": 1210,
+	"y": 600,
+	"wires": []
+}, {
+	"id": "5aa29a5d.deb574",
+	"type": "debug",
+	"z": "cafa937.6bdd87",
+	"name": "",
+	"active": true,
+	"console": "false",
+	"complete": "false",
+	"x": 1230,
+	"y": 720,
+	"wires": []
+}, {
+	"id": "d1239914.b459d8",
+	"type": "debug",
+	"z": "cafa937.6bdd87",
+	"name": "",
+	"active": true,
+	"tosidebar": true,
+	"console": false,
+	"tostatus": false,
+	"complete": "payload",
+	"targetType": "msg",
+	"x": 1230,
+	"y": 840,
+	"wires": []
+}, {
+	"id": "b60f887b.678df8",
+	"type": "function",
+	"z": "cafa937.6bdd87",
+	"name": "parse text from google cloud vision",
+	"func": "\nvar text = msg.payload.responses[0].fullTextAnnotation.text;\n\nnode.warn([\"vision-response=\",msg.payload, \"fullTextAnnoation\", text]);\nvar whiteSpaceRegex = new RegExp(\" \", 'g');\nvar dotRegex = new RegExp(\"\\\\.\", 'g');\n\n// The due date is in the last line therefore we split the text\nvar lines = text.split('\\n');\n\nlines = lines.filter(function (el) {\n  return el !== null && el.length > 0;\n});\n\nvar dueDate = lines[lines.length - 1].replace(\"Due: \", \"\").replace(new RegExp(\" \", 'g'), \"\").replace(new RegExp(\"\\\\.\", 'g'), \"/\");\n\nlines.pop();\nvar taskText = lines.join(\"\");\nconsole.log(\"dueDate\", dueDate)\n\nnode.warn([\"lines-before-remove\",lines]);\n\n// remove the due date in the last line \nlines.pop()\nnode.warn([\"lines-after-remove\",lines]);\n\n// join all other lines\nvar taskText = lines.join(\"\");\nvar result = {\n    \"description\": taskText,\n    \"dueDate\": dueDate\n}\n\nnode.warn([\"processed-result=\",result]);\nmsg.payload = result\nreturn msg;",
+	"outputs": 1,
+	"noerr": 0,
+	"x": 900,
+	"y": 840,
+	"wires": [
+		["d1239914.b459d8", "c281478a.2cc7d8"]
+	]
+}, {
+	"id": "c281478a.2cc7d8",
+	"type": "function",
+	"z": "cafa937.6bdd87",
+	"name": "send request to trello",
+	"func": "var config = global.get('config')\nvar trelloApiUrl = config.trelloApiListUrl; \n\n\nvar task = msg.payload;\nvar cardDescription = task.description;\nvar cardTitle = task.description;\nvar dueDate = task.dueDate;\n\n//the card details for trello are provided via the request URL\nvar requestUri = `${trelloApiUrl}&desc=${cardDescription}&name=${cardTitle}&due=${dueDate}`\nmsg.url = requestUri;\n\nreturn msg;",
+	"outputs": 1,
+	"noerr": 0,
+	"x": 860,
+	"y": 940,
+	"wires": [
+		["9f8d9ff0.3babd"]
+	]
+}, {
+	"id": "762040ca.a75c6",
+	"type": "function",
+	"z": "cafa937.6bdd87",
+	"name": "set config",
+	"func": "var config = {\n    trelloApiListUrl : \"https://api.trello.com/1/cards/?key=<PLACE_TRELLO_KEY_HERE>&token=<PLACE_TRELLO_TOKEN_HERE>&idList=<PLACE_TRELLO_LIST_ID_HERE>\",\n    googleVisionApiUrl: \"https://vision.googleapis.com/v1/images:annotate\\?key=<PLACE_GOOGLE_API_KEY_HERE>\"\n}\nglobal.set(\"config\", config)\nreturn msg;",
+	"outputs": 1,
+	"noerr": 0,
+	"x": 380,
+	"y": 60,
+	"wires": [
+		[]
+	]
+}, {
+	"id": "2c594df6.d8e2c2",
+	"type": "inject",
+	"z": "cafa937.6bdd87",
+	"name": "",
+	"topic": "",
+	"payload": "",
+	"payloadType": "date",
+	"repeat": "",
+	"crontab": "",
+	"once": false,
+	"onceDelay": 0.1,
+	"x": 200,
+	"y": 60,
+	"wires": [
+		["762040ca.a75c6"]
+	]
+}, {
+	"id": "9f8d9ff0.3babd",
+	"type": "http request",
+	"z": "cafa937.6bdd87",
+	"name": "",
+	"method": "POST",
+	"ret": "txt",
+	"paytoqs": false,
+	"url": "",
+	"tls": "",
+	"persist": false,
+	"proxy": "",
+	"authType": "",
+	"x": 1110,
+	"y": 940,
+	"wires": [
+		["a7491970.2df028"]
+	]
+}, {
+	"id": "a7491970.2df028",
+	"type": "debug",
+	"z": "cafa937.6bdd87",
+	"name": "",
+	"active": true,
+	"tosidebar": true,
+	"console": false,
+	"tostatus": false,
+	"complete": "payload",
+	"targetType": "msg",
+	"x": 1330,
+	"y": 940,
+	"wires": []
+}]
